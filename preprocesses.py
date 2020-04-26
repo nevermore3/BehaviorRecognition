@@ -3,16 +3,16 @@ import pandas as pd
 class BasePreProcessor(object):
     def __init__(self):
         pass
-    def handleData(self, input_raw_data, is_train=True):
+    def handleData(self, input_raw_data, dest_filepath, is_train=True):
         """
-        output file will be Train.txt or Test.txt
+        output file will be `dest_filepath`/Train.txt or `dest_filepath`/Test.txt
         """
         pass
 
 class LIBSVMPreprocessor(BasePreProcessor):
     def __init__(self):
         pass
-    def handleData(self, input_raw_data, is_train=True):
+    def handleData(self, input_raw_data, dest_filepath, is_train=True):
         train_data = pd.read_csv(input_raw_data[0], header = None, sep = '\s+')
         train_label = pd.read_csv(input_raw_data[1], header = None)
 
@@ -22,7 +22,8 @@ class LIBSVMPreprocessor(BasePreProcessor):
 
         data = pd.concat([train_label, train_data], axis = 1)
         # save data
-        data.to_csv(, header = 0, index = 0, sep = ' ')
+        save_path = dest_filepath + "/" + ("Train.txt" if is_train else "Test.txt")
+        data.to_csv(save_path, header=None, index=None, sep=' ')
 
 
 _libsvm_preprocessor = LIBSVMPreprocessor()
