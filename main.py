@@ -7,20 +7,25 @@ sys.path.append(os.path.abspath(__file__))
 import models
 import argparse
 import preprocesses
+import commons
 
 def main(args):
     # preprocess original raw data
-    preprocessor = preprocesses.select(args.preprocess)
-    preprocessor.handleData(args.train_input, args.intermediate_data, is_train=True)
+    with commons.PhaseLogger("Preprocess TrainSet"):
+        preprocessor = preprocesses.select(args.preprocess)
+        preprocessor.handleData(args.train_input, args.intermediate_data, is_train=True)
 
-    # train model
-    model = models.select(args.model)
-    model.train(args.intermediate_data)
-    # save model
-    model.save(args.intermediate_data)
-    # test model
-    preprocessor.handleData(args.test_input, args.intermediate_data, is_train=False)
-    model.evaluate(args.intermediate_data)
+    with commons.PhaseLogger("Training Model"):
+        # train model
+        model = models.select(args.model)
+        model.train(args.intermediate_data)
+    with commons.PhaseLogger("Saving Model"):
+        # save model
+        model.save(args.intermediate_data)
+    with commons.PhaseLogger("Evaluating Model"):
+        # test model
+        preprocessor.handleData(args.test_input, args.intermediate_data, is_train=False)
+        model.evaluate(args.intermediate_data)
 
 
 
