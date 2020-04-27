@@ -78,7 +78,7 @@ class LIBSVMModel(BaseModel):
         with commons.PhaseLogger("LIBSVM.save"):
             svmutil.svm_save_model(save_path + "/" + self._get_class_name() + ".model", self._model)
             #svmutil.save_svm_model(save_path + "\\" + self._get_class_name() + ".model", self._model)
-        logging.info("[%s]: Save Model Done")
+        logging.info("[%s]: Save Model Done" % self._get_class_name())
     
     def evaluate(self, input_data_path):
         with commons.PhaseLogger("LIBSVM.evaluate.read_problem"):
