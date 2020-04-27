@@ -13,16 +13,19 @@ class LIBSVMPreprocessor(BasePreProcessor):
     def __init__(self):
         pass
     def handleData(self, input_raw_data, dest_filepath, is_train=True):
-        train_data = pd.read_csv(input_raw_data[0], header = None, sep = '\s+')
-        train_label = pd.read_csv(input_raw_data[1], header = None)
+        x_input = input_raw_data+'\\X_train.txt'
+        y_input = input_raw_data+'\\Y_train.txt'
+        train_data = pd.read_csv(x_input, header = None, sep = '\s+')
+        train_label = pd.read_csv(y_input, header = None)
 
         for row_index, row_data in train_data.iterrows():
             for col_index, value in enumerate(row_data):
                 train_data.iloc[row_index, col_index] = str(col_index) + ':' + str(value)
 
-        data = pd.concat([train_label, train_data], axis = 1)
+        data = pd.concat([train_label[:100], train_data[:100]], axis = 1)
+        print(data.shape)
         # save data
-        save_path = dest_filepath + "/" + ("Train.txt" if is_train else "Test.txt")
+        save_path = dest_filepath + "\\" + ("Train.txt" if is_train else "Test.txt")
         data.to_csv(save_path, header=None, index=None, sep=' ')
 
 
