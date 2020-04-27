@@ -3,6 +3,7 @@ import logging
 import libsvm.svm as svm
 import libsvm.svmutil as svmutil
 import commons
+logging.basicConfig(level=logging.DEBUG)
 
 class BaseModel(object):
     def __init__(self):
@@ -59,18 +60,24 @@ class LIBSVMModel(BaseModel):
         -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)
         The k in the -g option means the number of attributes in the input data.
     """
-    def train(self, input_data_path, params="-t 0 -c 4 -b 1"):
+    def train(self, input_data_path, params="-t 0 -c 4 -b 1", is_eval=True):
         with commons.PhaseLogger("LIBSVM.train.read_problem"):
-            Y, X = svmutil.svm_read_problem(input_data_path + "\\Train.txt")
+            Y, X = svmutil.svm_read_problem(input_data_path + "/Train.txt")
+            prob = svmutil.svm_problem(Y,X)
+            #Y, X = svmutil.svm_read_problem(input_data_path + "\\Train.txt")
         self._params = svmutil.svm_parameter(params)
         with commons.PhaseLogger("LIBSVM.train.svm_train"):
-            self._model, acc, mse = svmutil.svm_train(Y, X, self._params)
+            self._model = svmutil.svm_train(prob, self._params)
         self._init = True
-        logging.info("[%s]: train with Acc[%.4f] and Mse[%.4f]" % (self._get_class_name(), acc, mse))
+        if is_eval is True:
+            p_labels, p_acc, p_vals = svmutil.svm_predict(Y, X, self._model)
+            acc, mse, _ = p_acc
+            logging.info("[%s]: train with Acc[%.4f] Mse[%.4f]" % (self._get_class_name(), acc, mse))
     
     def save(self, save_path):
         with commons.PhaseLogger("LIBSVM.save"):
-            svmutil.save_svm_model(save_path + "\\" + self._get_class_name() + ".model", self._model)
+            svmutil.svm_save_model(save_path + "/" + self._get_class_name() + ".model", self._model)
+            #svmutil.save_svm_model(save_path + "\\" + self._get_class_name() + ".model", self._model)
         logging.info("[%s]: Save Model Done")
     
     def evaluate(self, input_data_path):
@@ -78,7 +85,8 @@ class LIBSVMModel(BaseModel):
             Y, X = svmutil.svm_read_problem(input_data_path + "\\Test.txt")
         with commons.PhaseLogger("LIBSVM.evaluate.predict"):
             p_labels, p_acc, p_vals = svmutil.svm_predict(Y, X, self._model)
-        logging.info("[%s]: evaluate with Acc[%.4f]" % (self._get_class_name(), p_acc))
+        acc, mse, _ = p_acc
+        logging.info("[%s]: evaluate with Acc[%.4f] Mse[%.4f]" % (self._get_class_name(), acc, mse))
 
 
 _libsvm_model = LIBSVMModel()
@@ -91,3 +99,8 @@ def select(model_name):
         return None
     return _MODELS[model_name]
 
+
+if __name__  == "__main__":
+    model = _libsvm_model
+    model.train("./")
+    model.save("./")
