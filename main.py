@@ -14,7 +14,8 @@ def main(args):
     # preprocess original raw data
     with commons.PhaseLogger("Preprocess TrainSet"):
         preprocessor = preprocesses.select(args.preprocess)
-        preprocessor.handleData(args.train_input, args.intermediate_data, is_train=True)
+        # 这里v2 先用着测试，到时候名字改回来
+        preprocessor.handleData_v2(args.train_input, args.intermediate_data, is_train=True)
 
     with commons.PhaseLogger("Training Model"):
         # train model
