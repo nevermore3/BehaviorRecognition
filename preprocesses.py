@@ -1,4 +1,5 @@
 import logging
+import csv
 import pandas as pd
 class BasePreProcessor(object):
     def __init__(self):
@@ -15,14 +16,14 @@ class LIBSVMPreprocessor(BasePreProcessor):
     def handleData(self, input_raw_data, dest_filepath, is_train=True):
         x_input = input_raw_data+'\\X_train.txt'
         y_input = input_raw_data+'\\Y_train.txt'
-        train_data = pd.read_csv(x_input, header = None, sep = '\s+')
-        train_label = pd.read_csv(y_input, header = None)
+        train_data = pd.read_csv(x_input, header = None, sep = '\s+')[:100]
+        train_label = pd.read_csv(y_input, header = None)[:100]
 
         for row_index, row_data in train_data.iterrows():
             for col_index, value in enumerate(row_data):
                 train_data.iloc[row_index, col_index] = str(col_index) + ':' + str(value)
 
-        data = pd.concat([train_label[:100], train_data[:100]], axis = 1)
+        data = pd.concat([train_label, train_data], axis = 1)
         print(data.shape)
         # save data
         save_path = dest_filepath + "\\" + ("Train.txt" if is_train else "Test.txt")
@@ -48,13 +49,14 @@ class LIBSVMPreprocessor(BasePreProcessor):
             return res
 
         logging.info("Start to preprocess data with Length[%d]" % len(train_data))
-        train_data['svm_data'] = train_data.apply(handle_row, aixs=1)
+        train_data['svm_data'] = train_data.apply(handle_row, axis=1)
 
-        data = pd.DataFrame({'label' : train_label, 'svm_data': train_data.svm_data})
+        #data = pd.DataFrame({'label' : train_label, 'svm_data': train_data.svm_data})
+        data = pd.concat([train_label, train_data['svm_data']], axis=1)
         print(data.shape)
         # save data
         save_path = dest_filepath + "\\" + ("Train.txt" if is_train else "Test.txt")
-        data.to_csv(save_path, header=None, index=None, sep=' ')
+        data.to_csv(save_path, header=None, index=None, sep=' ', quoting=csv.QUOTE_NONE)
 
 
 _libsvm_preprocessor = LIBSVMPreprocessor()
