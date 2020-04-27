@@ -61,10 +61,10 @@ class LIBSVMModel(BaseModel):
     """
     def train(self, input_data_path, params="-t 0 -c 4 -b 1"):
         with commons.PhaseLogger("LIBSVM.train.read_problem"):
-            self._data = svmutil.svm_read_problem(input_data_path + "\\Train.txt")
+            Y, X = svmutil.svm_read_problem(input_data_path + "\\Train.txt")
         self._params = svmutil.svm_parameter(params)
         with commons.PhaseLogger("LIBSVM.train.svm_train"):
-            self._model, acc, mse = svmutil.svm_train(self._data, self._params)
+            self._model, acc, mse = svmutil.svm_train(Y, X, self._params)
         self._init = True
         logging.info("[%s]: train with Acc[%.4f] and Mse[%.4f]" % (self._get_class_name(), acc, mse))
     
